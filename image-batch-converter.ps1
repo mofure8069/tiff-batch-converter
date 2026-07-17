@@ -77,6 +77,19 @@ $numMinSize.Location = New-Object System.Drawing.Point(595,78)
 $numMinSize.Size = New-Object System.Drawing.Size(60,20)
 $form.Controls.Add($numMinSize)
 
+$chkAllFormats = New-Object System.Windows.Forms.CheckBox
+$chkAllFormats.Text = "All"
+$chkAllFormats.Checked = $false
+$chkAllFormats.Location = New-Object System.Drawing.Point(670,78)
+$chkAllFormats.AutoSize = $true
+$form.Controls.Add($chkAllFormats)
+
+$chkAllFormats.Add_CheckedChanged({
+    foreach ($pattern in $script:scanFormatChecks.Keys) {
+        $script:scanFormatChecks[$pattern].Checked = $chkAllFormats.Checked
+    }
+})
+
 $clb = New-Object System.Windows.Forms.ListView
 $clb.Location = New-Object System.Drawing.Point(10,110)
 $clb.Size = New-Object System.Drawing.Size(720,170)
