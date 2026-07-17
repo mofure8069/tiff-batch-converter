@@ -8,7 +8,7 @@ $form.StartPosition = "CenterScreen"
 $form.MinimumSize = $form.Size
 
 $lblFolder = New-Object System.Windows.Forms.Label
-$lblFolder.Text = "Root folder:"
+$lblFolder.Text = "1) Root folder:"
 $lblFolder.Location = New-Object System.Drawing.Point(10,15)
 $lblFolder.AutoSize = $true
 $form.Controls.Add($lblFolder)
@@ -25,7 +25,7 @@ $btnBrowse.Size = New-Object System.Drawing.Size(100,24)
 $form.Controls.Add($btnBrowse)
 
 $btnScan = New-Object System.Windows.Forms.Button
-$btnScan.Text = "Scan for image folders"
+$btnScan.Text = "2) Scan for image folders"
 $btnScan.Location = New-Object System.Drawing.Point(10,45)
 $btnScan.Size = New-Object System.Drawing.Size(160,26)
 $form.Controls.Add($btnScan)
@@ -117,7 +117,7 @@ $btnClearList.Size = New-Object System.Drawing.Size(100,24)
 $form.Controls.Add($btnClearList)
 
 $lblDeleteHint = New-Object System.Windows.Forms.Label
-$lblDeleteHint.Text = "(click a row to toggle its selection, or Ctrl+A for all)"
+$lblDeleteHint.Text = "3) Review your list. Click a row to select it, or Ctrl+A for all."
 $lblDeleteHint.Location = New-Object System.Drawing.Point(250,289)
 $lblDeleteHint.AutoSize = $true
 $form.Controls.Add($lblDeleteHint)
@@ -247,7 +247,7 @@ $form.Add_DragEnter($dragEnterHandler)
 $form.Add_DragDrop($dragDropHandler)
 
 $lblFormat = New-Object System.Windows.Forms.Label
-$lblFormat.Text = "Output format:"
+$lblFormat.Text = "4) Output format:"
 $lblFormat.Location = New-Object System.Drawing.Point(10,320)
 $lblFormat.AutoSize = $true
 $form.Controls.Add($lblFormat)
