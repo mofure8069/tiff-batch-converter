@@ -31,3 +31,14 @@ A simple Windows GUI for batch-converting TIFF images to WebP, JPEG, or PNG usin
 
 - `TIF_to_WebP_Converter.ps1` — the GUI application
 - `Run_Converter.bat` — launcher that runs the script with the right PowerShell execution policy
+
+## Known limitations
+
+- Windows-only (uses WinForms and `.bat`/`.ps1`)
+- Requires `magick` to already be resolvable on `PATH`; the GUI doesn't check or install ImageMagick for you
+- One quality setting applies to the whole batch — no per-file or per-folder overrides
+- Parallel job count is a flat number of concurrent `magick` processes; it doesn't account for per-file size, so very large images plus a high job count can use a lot of memory at once
+
+## License
+
+[MIT](LICENSE)
