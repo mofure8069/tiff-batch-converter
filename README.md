@@ -24,7 +24,7 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 ## Requirements
 
 - Windows with PowerShell
-- [ImageMagick](https://imagemagick.org/script/download.php) installed and available on `PATH` as `magick`
+- [ImageMagick](https://imagemagick.org/script/download.php) installed and available on `PATH` as `magick`. Easiest way: `winget install ImageMagick.ImageMagick`, or run the installer and make sure **"Add application directory to your system path"** is checked. The app will show a clear error on Start if `magick` isn't found — restart it after installing so the updated PATH takes effect
 
 ## Usage
 

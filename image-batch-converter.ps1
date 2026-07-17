@@ -497,6 +497,10 @@ $btnScan.Add_Click({
 })
 
 $btnStart.Add_Click({
+    if (-not (Get-Command magick -ErrorAction SilentlyContinue)) {
+        Show-InfoPopup "ImageMagick's 'magick' command was not found on your PATH.`n`nInstall it from https://imagemagick.org/script/download.php and make sure 'Add application directory to your system path' is checked during setup, then restart this app." "ImageMagick not found"
+        return
+    }
     $checkedCount = @($clb.Items | Where-Object { $_.Checked }).Count
     if ($checkedCount -eq 0) {
         [System.Windows.Forms.MessageBox]::Show("No folders selected.") | Out-Null
