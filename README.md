@@ -1,14 +1,15 @@
-# TIFF Batch Converter
+# Image Batch Converter
 
-A simple Windows GUI for batch-converting TIFF images to WebP, JPEG, or PNG using [ImageMagick](https://imagemagick.org/).
+A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, WebP) to JPEG, WebP, or PNG using [ImageMagick](https://imagemagick.org/).
 
-![TIFF Batch Converter screenshot](screenshots/screenshot.png)
+![Image Batch Converter screenshot](screenshots/screenshot.png)
 
 ## Features
 
-- Scans a folder tree and lists every subfolder containing `.tif`/`.tiff` files, with file counts and sizes
+- Scans a folder tree and lists every subfolder containing JPEG/PNG/GIF/BMP/TIFF/WebP files, with file counts and sizes
 - Pick which folders to include/exclude before converting
-- Output formats: WebP, JPEG, PNG, with an adjustable quality setting (WebP/JPEG only — PNG is lossless)
+- Output formats: JPEG (default), WebP, PNG, with an adjustable quality setting (JPEG/WebP only — PNG is lossless)
+- Files already in the target format are skipped automatically (no pointless re-encoding)
 - Optional metadata stripping (drops EXIF/color profile for smaller, slightly faster output)
 - Parallel conversion jobs — runs multiple `magick` processes at once to use all CPU cores
 - Stop button kills in-flight conversions immediately
@@ -24,7 +25,7 @@ A simple Windows GUI for batch-converting TIFF images to WebP, JPEG, or PNG usin
 
 1. Double-click `Run_Converter.bat`
 2. Browse to (or type) the root folder to scan
-3. Click **Scan for TIFF folders**
+3. Click **Scan for image folders**
 4. Uncheck any folders you don't want touched
 5. Choose output format, quality, and parallel job count
 6. Click **Start** — use **Stop** anytime to halt

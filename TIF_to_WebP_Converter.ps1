@@ -2,7 +2,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "TIFF Batch Converter"
+$form.Text = "Image Batch Converter"
 $form.Size = New-Object System.Drawing.Size(760,635)
 $form.StartPosition = "CenterScreen"
 $form.MinimumSize = $form.Size
@@ -25,13 +25,13 @@ $btnBrowse.Size = New-Object System.Drawing.Size(100,24)
 $form.Controls.Add($btnBrowse)
 
 $btnScan = New-Object System.Windows.Forms.Button
-$btnScan.Text = "Scan for TIFF folders"
+$btnScan.Text = "Scan for image folders"
 $btnScan.Location = New-Object System.Drawing.Point(10,45)
 $btnScan.Size = New-Object System.Drawing.Size(160,26)
 $form.Controls.Add($btnScan)
 
 $lblHint = New-Object System.Windows.Forms.Label
-$lblHint.Text = "Uncheck any folder you don't want touched. Already-converted files are skipped automatically (safe to re-run after Stop)."
+$lblHint.Text = "Finds JPEG/PNG/GIF/BMP/TIFF/WebP files. Uncheck any folder you don't want touched. Already-converted files are skipped (safe to re-run after Stop)."
 $lblHint.Location = New-Object System.Drawing.Point(180,50)
 $lblHint.Size = New-Object System.Drawing.Size(560,20)
 $form.Controls.Add($lblHint)
@@ -51,7 +51,7 @@ $form.Controls.Add($lblFormat)
 
 $cmbFormat = New-Object System.Windows.Forms.ComboBox
 $cmbFormat.DropDownStyle = "DropDownList"
-$cmbFormat.Items.AddRange(@("WebP","JPEG","PNG"))
+$cmbFormat.Items.AddRange(@("JPEG","WebP","PNG"))
 $cmbFormat.SelectedIndex = 0
 $cmbFormat.Location = New-Object System.Drawing.Point(380,287)
 $cmbFormat.Size = New-Object System.Drawing.Size(80,22)
@@ -169,9 +169,10 @@ $btnScan.Add_Click({
 
     $files = Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue |
         Where-Object {
-            $_.Extension -match '^\.tiff?$' -and
+            $_.Extension -match '^\.(jpe?g|png|gif|bmp|tiff?|webp)$' -and
             $_.FullName -notmatch '\\_TIF_BACKUP\\' -and
-            $_.FullName -notmatch '\\\w+_output\\'
+            $_.FullName -notmatch '\\\w+_output\\' -and
+            $_.FullName -notmatch '\\screenshots\\'
         }
     $groups = $files | Group-Object DirectoryName
 
@@ -182,7 +183,7 @@ $btnScan.Add_Click({
         $clb.Items.Add($label, $true) | Out-Null
         $script:folderData += [PSCustomObject]@{ Path = $g.Name; Files = $g.Group }
     }
-    $lblStatus.Text = "Found $($groups.Count) folder(s) with TIFF files, $($files.Count) files total."
+    $lblStatus.Text = "Found $($groups.Count) folder(s) with image files, $($files.Count) files total."
     Add-Log $lblStatus.Text
     $btnStart.Enabled = ($groups.Count -gt 0)
 })
@@ -233,6 +234,11 @@ $btnStart.Add_Click({
         while (($queue.Count -gt 0 -or $inFlight.Count -gt 0) -and -not $script:cancelRequested) {
             while ($inFlight.Count -lt $parallelJobs -and $queue.Count -gt 0) {
                 $f = $queue.Dequeue()
+                if ($f.Extension.ToLower() -eq $ext) {
+                    $done++
+                    $progressOverall.Value = [math]::Min($done, $total)
+                    continue
+                }
                 $outFile = Join-Path $outDir ($f.BaseName + $ext)
                 if (Test-Path $outFile) {
                     $done++
