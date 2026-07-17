@@ -11,7 +11,6 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 - Pick which folders to include/exclude before converting
 - Select rows (click, Ctrl+click, Shift+click, or Ctrl+A) and click **Delete Selected** to remove entries from the list
 - Output formats: JPEG (default), WebP, PNG, with an adjustable quality setting (JPEG/WebP only — PNG is lossless)
-- Files already in the target format are skipped automatically (no pointless re-encoding)
 - Optional metadata stripping (drops EXIF/color profile for smaller, slightly faster output)
 - Parallel conversion jobs — runs multiple `magick` processes at once to use all CPU cores
 - Stop button kills in-flight conversions immediately

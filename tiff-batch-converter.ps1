@@ -404,11 +404,6 @@ $btnStart.Add_Click({
         while (($queue.Count -gt 0 -or $inFlight.Count -gt 0) -and -not $script:cancelRequested) {
             while ($inFlight.Count -lt $parallelJobs -and $queue.Count -gt 0) {
                 $f = $queue.Dequeue()
-                if ($f.Extension.ToLower() -eq $ext) {
-                    $done++
-                    $progressOverall.Value = [math]::Min($done, $total)
-                    continue
-                }
                 $outFile = Join-Path $outDir ($f.BaseName + $ext)
                 if (Test-Path $outFile) {
                     $done++
