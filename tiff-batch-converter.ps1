@@ -31,7 +31,7 @@ $btnScan.Size = New-Object System.Drawing.Size(160,26)
 $form.Controls.Add($btnScan)
 
 $lblHint = New-Object System.Windows.Forms.Label
-$lblHint.Text = "Uncheck any folder you don't want touched. Already-converted files are skipped (safe to re-run after Stop)."
+$lblHint.Text = "Uncheck any folder you don't want touched, or drag files/folders straight into the list below. Already-converted files are skipped (safe to re-run after Stop)."
 $lblHint.Location = New-Object System.Drawing.Point(180,50)
 $lblHint.Size = New-Object System.Drawing.Size(560,20)
 $form.Controls.Add($lblHint)
@@ -68,7 +68,86 @@ $clb.Location = New-Object System.Drawing.Point(10,110)
 $clb.Size = New-Object System.Drawing.Size(720,200)
 $clb.CheckOnClick = $true
 $clb.HorizontalScrollbar = $true
+$clb.AllowDrop = $true
 $form.Controls.Add($clb)
+$form.AllowDrop = $true
+
+$script:dropImgExtRegex = '^\.(jpe?g|png|gif|bmp|tiff?|webp)$'
+
+function Add-DroppedPaths([string[]]$paths) {
+    if ($script:running) { return }
+    $collected = New-Object System.Collections.Generic.List[System.IO.FileInfo]
+    foreach ($p in $paths) {
+        if (Test-Path -LiteralPath $p -PathType Container) {
+            $found = Get-ChildItem -LiteralPath $p -Recurse -File -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $_.Extension -match $script:dropImgExtRegex -and
+                    $_.FullName -notmatch '\\_TIF_BACKUP\\' -and
+                    $_.FullName -notmatch '\\\w+_output\\' -and
+                    $_.FullName -notmatch '\\screenshots\\'
+                }
+            foreach ($f in $found) { $collected.Add($f) }
+        } elseif (Test-Path -LiteralPath $p -PathType Leaf) {
+            $fi = Get-Item -LiteralPath $p
+            if ($fi.Extension -match $script:dropImgExtRegex) { $collected.Add($fi) }
+        }
+    }
+
+    if ($collected.Count -eq 0) {
+        $lblStatus.Text = "Nothing supported in what you dropped (JPEG/PNG/GIF/BMP/TIFF/WebP only)."
+        return
+    }
+
+    $newGroups = $collected | Group-Object DirectoryName
+    $addedFiles = 0
+    $addedFolders = 0
+    foreach ($g in $newGroups) {
+        $existingIdx = -1
+        for ($i = 0; $i -lt $script:folderData.Count; $i++) {
+            if ($script:folderData[$i].Path -eq $g.Name) { $existingIdx = $i; break }
+        }
+        if ($existingIdx -ge 0) {
+            $existingFiles = @($script:folderData[$existingIdx].Files)
+            $existingNames = $existingFiles | ForEach-Object { $_.FullName }
+            $newOnes = @($g.Group | Where-Object { $existingNames -notcontains $_.FullName })
+            if ($newOnes.Count -gt 0) {
+                $mergedFiles = $existingFiles + $newOnes
+                $script:folderData[$existingIdx].Files = $mergedFiles
+                $addedFiles += $newOnes.Count
+                $sizeMB = [math]::Round(($mergedFiles | Measure-Object Length -Sum).Sum / 1MB, 1)
+                $clb.Items[$existingIdx] = "[$($mergedFiles.Count) files, $sizeMB MB]  $($g.Name)"
+            }
+        } else {
+            $sizeMB = [math]::Round(($g.Group | Measure-Object Length -Sum).Sum / 1MB, 1)
+            $label = "[$($g.Count) files, $sizeMB MB]  $($g.Name)"
+            $clb.Items.Add($label, $true) | Out-Null
+            $script:folderData += [PSCustomObject]@{ Path = $g.Name; Files = @($g.Group) }
+            $addedFiles += $g.Count
+            $addedFolders++
+        }
+    }
+    $lblStatus.Text = "Dropped: added $addedFiles file(s), $addedFolders new folder(s) to the list."
+    Add-Log $lblStatus.Text
+    $btnStart.Enabled = ($clb.Items.Count -gt 0)
+}
+
+$dragEnterHandler = {
+    param($s, $e)
+    if ($e.Data.GetDataPresent([System.Windows.Forms.DataFormats]::FileDrop)) {
+        $e.Effect = [System.Windows.Forms.DragDropEffects]::Copy
+    } else {
+        $e.Effect = [System.Windows.Forms.DragDropEffects]::None
+    }
+}
+$dragDropHandler = {
+    param($s, $e)
+    $paths = $e.Data.GetData([System.Windows.Forms.DataFormats]::FileDrop)
+    Add-DroppedPaths -paths $paths
+}
+$clb.Add_DragEnter($dragEnterHandler)
+$clb.Add_DragDrop($dragDropHandler)
+$form.Add_DragEnter($dragEnterHandler)
+$form.Add_DragDrop($dragDropHandler)
 
 $lblFormat = New-Object System.Windows.Forms.Label
 $lblFormat.Text = "Output format:"
