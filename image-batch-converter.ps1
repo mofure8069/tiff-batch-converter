@@ -50,8 +50,15 @@ $scanFormatDefs = @(
     @{ Name = "TIFF"; Pattern = "tiff?" },
     @{ Name = "WebP"; Pattern = "webp" }
 )
+$chkAllFormats = New-Object System.Windows.Forms.CheckBox
+$chkAllFormats.Text = "All"
+$chkAllFormats.Checked = $false
+$chkAllFormats.Location = New-Object System.Drawing.Point(80,78)
+$chkAllFormats.AutoSize = $true
+$form.Controls.Add($chkAllFormats)
+
 $script:scanFormatChecks = @{}
-$sfx = 80
+$sfx = 145
 foreach ($sf in $scanFormatDefs) {
     $chk = New-Object System.Windows.Forms.CheckBox
     $chk.Text = $sf.Name
@@ -65,7 +72,7 @@ foreach ($sf in $scanFormatDefs) {
 
 $lblMinSize = New-Object System.Windows.Forms.Label
 $lblMinSize.Text = "Min size (MB):"
-$lblMinSize.Location = New-Object System.Drawing.Point(480,80)
+$lblMinSize.Location = New-Object System.Drawing.Point(545,80)
 $lblMinSize.AutoSize = $true
 $form.Controls.Add($lblMinSize)
 
@@ -73,16 +80,9 @@ $numMinSize = New-Object System.Windows.Forms.NumericUpDown
 $numMinSize.Minimum = 0
 $numMinSize.Maximum = 1000
 $numMinSize.Value = 3
-$numMinSize.Location = New-Object System.Drawing.Point(595,78)
+$numMinSize.Location = New-Object System.Drawing.Point(660,78)
 $numMinSize.Size = New-Object System.Drawing.Size(60,20)
 $form.Controls.Add($numMinSize)
-
-$chkAllFormats = New-Object System.Windows.Forms.CheckBox
-$chkAllFormats.Text = "All"
-$chkAllFormats.Checked = $false
-$chkAllFormats.Location = New-Object System.Drawing.Point(670,78)
-$chkAllFormats.AutoSize = $true
-$form.Controls.Add($chkAllFormats)
 
 $chkAllFormats.Add_CheckedChanged({
     foreach ($pattern in $script:scanFormatChecks.Keys) {
