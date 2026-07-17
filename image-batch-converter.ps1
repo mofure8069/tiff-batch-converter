@@ -334,6 +334,25 @@ function Add-Log([string]$msg, [bool]$isError = $false) {
     $txtLog.ScrollToCaret()
 }
 
+function Get-RecommendedParallelJobs([string]$path) {
+    $cpuCount = [Math]::Max(1, [Environment]::ProcessorCount)
+    try {
+        $driveLetter = (Resolve-Path -LiteralPath $path).Path.Substring(0,1)
+        $partition = Get-Partition -DriveLetter $driveLetter -ErrorAction Stop
+        $disk = Get-Disk -Number $partition.DiskNumber -ErrorAction Stop
+        $physDisk = Get-PhysicalDisk -ErrorAction Stop | Where-Object { $_.DeviceId -eq $disk.Number } | Select-Object -First 1
+        if ($physDisk.MediaType -eq "HDD") {
+            return @{ Jobs = 2; Reason = "spinning HDD ($($disk.FriendlyName)) - low parallelism avoids disk-seek thrashing" }
+        } elseif ($disk.BusType -eq "USB") {
+            return @{ Jobs = [Math]::Min(6, $cpuCount); Reason = "external USB drive ($($disk.FriendlyName)) - moderate parallelism to avoid overloading it" }
+        } else {
+            return @{ Jobs = $cpuCount; Reason = "internal $($physDisk.MediaType) ($($disk.FriendlyName))" }
+        }
+    } catch {
+        return @{ Jobs = $cpuCount; Reason = "could not detect drive type, defaulting to CPU core count" }
+    }
+}
+
 $btnBrowse.Add_Click({
     $fbd = New-Object System.Windows.Forms.FolderBrowserDialog
     if (-not [string]::IsNullOrWhiteSpace($txtFolder.Text) -and (Test-Path $txtFolder.Text)) { $fbd.SelectedPath = $txtFolder.Text }
@@ -353,6 +372,12 @@ $btnScan.Add_Click({
     $btnStart.Enabled = $false
     $lblStatus.Text = "Scanning..."
     [System.Windows.Forms.Application]::DoEvents()
+
+    $recommended = Get-RecommendedParallelJobs $root
+    if ([int]$numParallel.Value -ne $recommended.Jobs) {
+        $numParallel.Value = [Math]::Min([Math]::Max($recommended.Jobs, $numParallel.Minimum), $numParallel.Maximum)
+        Add-Log "Parallel jobs set to $($recommended.Jobs): $($recommended.Reason)"
+    }
 
     $activePatterns = @($script:scanFormatChecks.Keys | Where-Object { $script:scanFormatChecks[$_].Checked })
     if ($activePatterns.Count -eq 0) {
@@ -465,6 +490,9 @@ $btnStart.Add_Click({
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
                 $psi.FileName = "magick"
                 $argParts = New-Object System.Collections.Generic.List[string]
+                $argParts.Add("-limit"); $argParts.Add("thread"); $argParts.Add("1")
+                $argParts.Add("-limit"); $argParts.Add("memory"); $argParts.Add("1GiB")
+                $argParts.Add("-limit"); $argParts.Add("map"); $argParts.Add("2GiB")
                 $argParts.Add("`"$($f.FullName)`"")
                 if ($stripMeta) { $argParts.Add("-strip") }
                 if ($format -ne "PNG") { $argParts.Add("-quality"); $argParts.Add("$quality") }
