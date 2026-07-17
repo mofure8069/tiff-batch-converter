@@ -29,10 +29,10 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 ## Usage
 
 1. Double-click `Run_Converter.bat` — it checks for ImageMagick on your PATH first and shows install instructions instead of launching if it's missing
-2. Browse to (or type) the root folder to scan
-3. Click **Scan for image folders**
-4. Uncheck any folders you don't want touched
-5. Choose output format, quality, and parallel job count
+2. Browse to (or type) the root folder
+3. Check which formats to scan for (or check **All**), optionally set a **Min size (MB)** to skip small files, then click **Scan for image folders** — or skip scanning entirely and just drag files/folders straight into the list
+4. Uncheck any folders you don't want touched, or use **Delete Selected** (after selecting rows) / **Clear List** to remove entries
+5. Choose output format, quality, parallel job count, and output folder name — or check **Replace files in original folder** to convert in place instead of using a separate output folder
 6. Click **Start** — use **Stop** anytime to halt
 
 ## Files
