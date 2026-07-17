@@ -117,7 +117,7 @@ $btnClearList.Size = New-Object System.Drawing.Size(100,24)
 $form.Controls.Add($btnClearList)
 
 $lblDeleteHint = New-Object System.Windows.Forms.Label
-$lblDeleteHint.Text = "(click a row to toggle its selection, or Ctrl+A for all, then Delete Selected)"
+$lblDeleteHint.Text = "(click a row to toggle its selection, or Ctrl+A for all)"
 $lblDeleteHint.Location = New-Object System.Drawing.Point(250,289)
 $lblDeleteHint.AutoSize = $true
 $form.Controls.Add($lblDeleteHint)
@@ -314,7 +314,7 @@ $lblParallelHint.AutoSize = $true
 $form.Controls.Add($lblParallelHint)
 
 $chkStrip = New-Object System.Windows.Forms.CheckBox
-$chkStrip.Text = "Strip metadata (faster + smaller, drops color profile/EXIF)"
+$chkStrip.Text = "Strip metadata (faster + smaller, drops EXIF/XMP/IPTC/color profile and other embedded metadata)"
 $chkStrip.Checked = $false
 $chkStrip.Location = New-Object System.Drawing.Point(10,377)
 $chkStrip.AutoSize = $true
@@ -343,6 +343,7 @@ $form.Controls.Add($lblReplaceWarn)
 
 $chkReplace.Add_CheckedChanged({
     $chkBackupReplace.Enabled = $chkReplace.Checked
+    $chkBackupReplace.Checked = $chkReplace.Checked
 })
 
 $btnStart = New-Object System.Windows.Forms.Button

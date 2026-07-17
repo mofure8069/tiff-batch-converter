@@ -11,7 +11,7 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 - Pick which folders to include/exclude before converting
 - Select rows (click, Ctrl+click, Shift+click, or Ctrl+A) and click **Delete Selected** to remove entries from the list, or **Clear List** to empty it entirely
 - Output formats: JPEG (default), WebP, PNG, with an adjustable quality setting (JPEG/WebP only — PNG is lossless)
-- Optional metadata stripping (drops EXIF/color profile for smaller, slightly faster output)
+- Optional metadata stripping (drops EXIF/XMP/IPTC/color profile and other embedded metadata, for smaller, slightly faster output)
 - Parallel conversion jobs — runs multiple `magick` processes at once. Scanning auto-detects the target drive and picks a sensible default: full CPU core count on an internal SSD/NVMe drive, a moderate count on external USB drives, or just 2 on a spinning HDD (more parallelism there just causes disk-seek thrashing, not speed) — always manually adjustable
 - Each `magick` process is capped with `-limit thread 1 -limit memory 1GiB -limit map 2GiB` to keep total RAM/CPU use predictable when many run in parallel
 - Stop button kills in-flight conversions immediately
