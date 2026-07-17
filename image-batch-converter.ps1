@@ -366,6 +366,34 @@ function Add-Log([string]$msg, [bool]$isError = $false) {
     $txtLog.ScrollToCaret()
 }
 
+function Show-InfoPopup([string]$message, [string]$title) {
+    $popup = New-Object System.Windows.Forms.Form
+    $popup.Text = $title
+    $popup.StartPosition = "CenterParent"
+    $popup.FormBorderStyle = "FixedDialog"
+    $popup.MaximizeBox = $false
+    $popup.MinimizeBox = $false
+    $popup.ShowInTaskbar = $false
+    $popup.ClientSize = New-Object System.Drawing.Size(400,140)
+
+    $lbl = New-Object System.Windows.Forms.Label
+    $lbl.Text = $message
+    $lbl.Location = New-Object System.Drawing.Point(15,15)
+    $lbl.Size = New-Object System.Drawing.Size(370,85)
+    $popup.Controls.Add($lbl)
+
+    $btnOk = New-Object System.Windows.Forms.Button
+    $btnOk.Text = "OK"
+    $btnOk.Location = New-Object System.Drawing.Point(160,105)
+    $btnOk.Size = New-Object System.Drawing.Size(80,28)
+    $btnOk.DialogResult = [System.Windows.Forms.DialogResult]::OK
+    $popup.Controls.Add($btnOk)
+    $popup.AcceptButton = $btnOk
+
+    [void]$popup.ShowDialog($form)
+    $popup.Dispose()
+}
+
 function Get-RecommendedParallelJobs([string]$path) {
     $cpuCount = [Math]::Max(1, [Environment]::ProcessorCount)
     try {
@@ -589,11 +617,11 @@ $btnStart.Add_Click({
     Add-Log $lblStatus.Text ($errCount -gt 0)
     $progressOverall.Value = 0
     if ($script:cancelRequested) {
-        [System.Windows.Forms.MessageBox]::Show("Stopped at $done/$total files.$sizeSummary", "Stopped", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::None) | Out-Null
+        Show-InfoPopup "Stopped at $done/$total files.$sizeSummary" "Stopped"
     } elseif ($errCount -gt 0) {
-        [System.Windows.Forms.MessageBox]::Show("Finished with $errCount error(s). $done/$total files processed.$sizeSummary`nSee the log for details.", "Finished with errors", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::None) | Out-Null
+        Show-InfoPopup "Finished with $errCount error(s). $done/$total files processed.$sizeSummary`nSee the log for details." "Finished with errors"
     } else {
-        [System.Windows.Forms.MessageBox]::Show("All $total file(s) processed successfully.$sizeSummary", "Finished", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::None) | Out-Null
+        Show-InfoPopup "All $total file(s) processed successfully.$sizeSummary" "Finished"
     }
     $script:running = $false
     $btnStart.Enabled = $true
