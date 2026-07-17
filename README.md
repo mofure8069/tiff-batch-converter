@@ -15,7 +15,8 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 - Parallel conversion jobs — runs multiple `magick` processes at once to use all CPU cores
 - Stop button kills in-flight conversions immediately
 - Already-converted files are skipped automatically, so a run can be safely stopped and resumed later
-- Output is written to a `<format>_output` subfolder next to each source folder; originals are never modified
+- Output is written to a `<format>_output` subfolder next to each source folder by default, so originals are never touched
+- Or check **Replace files in original folder** to write converted files directly alongside (or over) the originals instead of a separate output folder — optionally backing up originals to `_ORIGINAL_BACKUP` first (on by default when this mode is used). Note: this mode always reprocesses every checked file on each run, since there's no separate output location to check for "already done"
 
 ## Requirements
 
@@ -33,7 +34,7 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 
 ## Files
 
-- `tiff-batch-converter.ps1` — the GUI application
+- `image-batch-converter.ps1` — the GUI application
 - `Run_Converter.bat` — launcher that runs the script with the right PowerShell execution policy
 
 ## Known limitations

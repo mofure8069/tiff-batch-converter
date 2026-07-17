@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Image Batch Converter"
-$form.Size = New-Object System.Drawing.Size(760,665)
+$form.Size = New-Object System.Drawing.Size(760,715)
 $form.StartPosition = "CenterScreen"
 $form.MinimumSize = $form.Size
 
@@ -263,27 +263,52 @@ $chkStrip.Location = New-Object System.Drawing.Point(10,377)
 $chkStrip.AutoSize = $true
 $form.Controls.Add($chkStrip)
 
+$chkReplace = New-Object System.Windows.Forms.CheckBox
+$chkReplace.Text = "Replace files in original folder (instead of a separate output folder)"
+$chkReplace.Checked = $false
+$chkReplace.Location = New-Object System.Drawing.Point(10,400)
+$chkReplace.AutoSize = $true
+$form.Controls.Add($chkReplace)
+
+$chkBackupReplace = New-Object System.Windows.Forms.CheckBox
+$chkBackupReplace.Text = "Back up originals first"
+$chkBackupReplace.Checked = $true
+$chkBackupReplace.Enabled = $false
+$chkBackupReplace.Location = New-Object System.Drawing.Point(30,423)
+$chkBackupReplace.AutoSize = $true
+$form.Controls.Add($chkBackupReplace)
+
+$lblReplaceWarn = New-Object System.Windows.Forms.Label
+$lblReplaceWarn.Text = "(no safe-resume in this mode - every checked file gets reprocessed each run)"
+$lblReplaceWarn.Location = New-Object System.Drawing.Point(190,426)
+$lblReplaceWarn.AutoSize = $true
+$form.Controls.Add($lblReplaceWarn)
+
+$chkReplace.Add_CheckedChanged({
+    $chkBackupReplace.Enabled = $chkReplace.Checked
+})
+
 $btnStart = New-Object System.Windows.Forms.Button
 $btnStart.Text = "Start"
-$btnStart.Location = New-Object System.Drawing.Point(10,405)
+$btnStart.Location = New-Object System.Drawing.Point(10,455)
 $btnStart.Size = New-Object System.Drawing.Size(120,32)
 $btnStart.Enabled = $false
 $form.Controls.Add($btnStart)
 
 $btnStop = New-Object System.Windows.Forms.Button
 $btnStop.Text = "Stop"
-$btnStop.Location = New-Object System.Drawing.Point(140,405)
+$btnStop.Location = New-Object System.Drawing.Point(140,455)
 $btnStop.Size = New-Object System.Drawing.Size(120,32)
 $btnStop.Enabled = $false
 $form.Controls.Add($btnStop)
 
 $progressOverall = New-Object System.Windows.Forms.ProgressBar
-$progressOverall.Location = New-Object System.Drawing.Point(10,445)
+$progressOverall.Location = New-Object System.Drawing.Point(10,495)
 $progressOverall.Size = New-Object System.Drawing.Size(720,25)
 $form.Controls.Add($progressOverall)
 
 $lblStatus = New-Object System.Windows.Forms.Label
-$lblStatus.Location = New-Object System.Drawing.Point(10,475)
+$lblStatus.Location = New-Object System.Drawing.Point(10,525)
 $lblStatus.Size = New-Object System.Drawing.Size(720,20)
 $lblStatus.Text = "Idle. Pick a root folder and click Scan."
 $form.Controls.Add($lblStatus)
@@ -291,7 +316,7 @@ $form.Controls.Add($lblStatus)
 $txtLog = New-Object System.Windows.Forms.TextBox
 $txtLog.Multiline = $true
 $txtLog.ScrollBars = "Vertical"
-$txtLog.Location = New-Object System.Drawing.Point(10,500)
+$txtLog.Location = New-Object System.Drawing.Point(10,550)
 $txtLog.Size = New-Object System.Drawing.Size(720,130)
 $txtLog.ReadOnly = $true
 $txtLog.Font = New-Object System.Drawing.Font("Consolas",9)
@@ -369,6 +394,8 @@ $btnStart.Add_Click({
     $btnScan.Enabled = $false
     $btnBrowse.Enabled = $false
     $btnDelete.Enabled = $false
+    $chkReplace.Enabled = $false
+    $chkBackupReplace.Enabled = $false
 
     $selectedIndices = 0..($clb.Items.Count - 1) | Where-Object { $clb.Items[$_].Checked }
     $selectedFolders = $selectedIndices | ForEach-Object { $script:folderData[$_] }
@@ -386,6 +413,8 @@ $btnStart.Add_Click({
     $outDirName = "$($format.ToLower())_output"
     $parallelJobs = [int]$numParallel.Value
     $stripMeta = $chkStrip.Checked
+    $replaceMode = $chkReplace.Checked
+    $backupBeforeReplace = $chkBackupReplace.Checked
 
     foreach ($fd in $selectedFolders) {
         if ($script:cancelRequested) { break }
@@ -394,8 +423,27 @@ $btnStart.Add_Click({
         Add-Log "=== $dir ($($tifFiles.Count) files) ==="
         [System.Windows.Forms.Application]::DoEvents()
 
-        $outDir = Join-Path $dir $outDirName
-        if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }
+        if ($replaceMode) {
+            $outDir = $dir
+            if ($backupBeforeReplace) {
+                $backupDir = Join-Path $dir "_ORIGINAL_BACKUP"
+                if (-not (Test-Path $backupDir)) {
+                    New-Item -ItemType Directory -Path $backupDir | Out-Null
+                    foreach ($f in $tifFiles) {
+                        if ($script:cancelRequested) { break }
+                        Copy-Item -LiteralPath $f.FullName -Destination $backupDir -ErrorAction SilentlyContinue
+                        [System.Windows.Forms.Application]::DoEvents()
+                    }
+                    if (-not $script:cancelRequested) { Add-Log "  backed up originals: $backupDir" }
+                } else {
+                    Add-Log "  backup already exists, skipped: $backupDir"
+                }
+            }
+        } else {
+            $outDir = Join-Path $dir $outDirName
+            if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }
+        }
+        if ($script:cancelRequested) { break }
 
         $queue = New-Object System.Collections.Generic.Queue[object]
         foreach ($f in $tifFiles) { $queue.Enqueue($f) }
@@ -405,7 +453,7 @@ $btnStart.Add_Click({
             while ($inFlight.Count -lt $parallelJobs -and $queue.Count -gt 0) {
                 $f = $queue.Dequeue()
                 $outFile = Join-Path $outDir ($f.BaseName + $ext)
-                if (Test-Path $outFile) {
+                if ((-not $replaceMode) -and (Test-Path $outFile)) {
                     $done++
                     $progressOverall.Value = [math]::Min($done, $total)
                     continue
@@ -461,6 +509,8 @@ $btnStart.Add_Click({
     $btnScan.Enabled = $true
     $btnBrowse.Enabled = $true
     $btnDelete.Enabled = $true
+    $chkReplace.Enabled = $true
+    $chkBackupReplace.Enabled = $chkReplace.Checked
 })
 
 $btnStop.Add_Click({

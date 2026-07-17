@@ -2,7 +2,7 @@
 !.gitignore
 !.gitattributes
 !Run_Converter.bat
-!tiff-batch-converter.ps1
+!image-batch-converter.ps1
 !README.md
 !LICENSE
 !screenshots/
