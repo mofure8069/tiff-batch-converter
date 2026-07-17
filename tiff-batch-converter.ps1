@@ -55,7 +55,7 @@ $sfx = 80
 foreach ($sf in $scanFormatDefs) {
     $chk = New-Object System.Windows.Forms.CheckBox
     $chk.Text = $sf.Name
-    $chk.Checked = $true
+    $chk.Checked = $false
     $chk.Location = New-Object System.Drawing.Point($sfx,78)
     $chk.AutoSize = $true
     $form.Controls.Add($chk)
@@ -72,7 +72,7 @@ $form.Controls.Add($clb)
 
 $lblFormat = New-Object System.Windows.Forms.Label
 $lblFormat.Text = "Output format:"
-$lblFormat.Location = New-Object System.Drawing.Point(280,320)
+$lblFormat.Location = New-Object System.Drawing.Point(10,320)
 $lblFormat.AutoSize = $true
 $form.Controls.Add($lblFormat)
 
@@ -80,13 +80,13 @@ $cmbFormat = New-Object System.Windows.Forms.ComboBox
 $cmbFormat.DropDownStyle = "DropDownList"
 $cmbFormat.Items.AddRange(@("JPEG","WebP","PNG"))
 $cmbFormat.SelectedIndex = 0
-$cmbFormat.Location = New-Object System.Drawing.Point(380,317)
+$cmbFormat.Location = New-Object System.Drawing.Point(110,317)
 $cmbFormat.Size = New-Object System.Drawing.Size(80,22)
 $form.Controls.Add($cmbFormat)
 
 $lblQuality = New-Object System.Windows.Forms.Label
 $lblQuality.Text = "Quality (1-100):"
-$lblQuality.Location = New-Object System.Drawing.Point(480,320)
+$lblQuality.Location = New-Object System.Drawing.Point(210,320)
 $lblQuality.AutoSize = $true
 $form.Controls.Add($lblQuality)
 
@@ -94,7 +94,7 @@ $numQuality = New-Object System.Windows.Forms.NumericUpDown
 $numQuality.Minimum = 1
 $numQuality.Maximum = 100
 $numQuality.Value = 90
-$numQuality.Location = New-Object System.Drawing.Point(610,318)
+$numQuality.Location = New-Object System.Drawing.Point(330,318)
 $numQuality.Size = New-Object System.Drawing.Size(60,20)
 $form.Controls.Add($numQuality)
 
