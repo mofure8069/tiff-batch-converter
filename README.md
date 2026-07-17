@@ -14,6 +14,7 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 - Optional metadata stripping (drops EXIF/color profile for smaller, slightly faster output)
 - Parallel conversion jobs — runs multiple `magick` processes at once to use all CPU cores
 - Stop button kills in-flight conversions immediately
+- Error lines in the log are highlighted in red; a popup confirms when a run finishes or is stopped, and the progress bar resets afterward
 - Already-converted files are skipped automatically, so a run can be safely stopped and resumed later
 - Output is written to a `<format>_output` subfolder next to each source folder by default, so originals are never touched
 - Or check **Replace files in original folder** to convert files in place: on success, the original is deleted and the converted file takes its place in the same folder (even if the extension changes, e.g. `.jpeg` → `.jpg`) — optionally backing up originals to `_ORIGINAL_BACKUP` first (on by default when this mode is used). Note: this mode always reprocesses every checked file on each run, since there's no separate output location to check for "already done"

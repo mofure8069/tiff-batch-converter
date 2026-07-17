@@ -313,8 +313,7 @@ $lblStatus.Size = New-Object System.Drawing.Size(720,20)
 $lblStatus.Text = "Idle. Pick a root folder and click Scan."
 $form.Controls.Add($lblStatus)
 
-$txtLog = New-Object System.Windows.Forms.TextBox
-$txtLog.Multiline = $true
+$txtLog = New-Object System.Windows.Forms.RichTextBox
 $txtLog.ScrollBars = "Vertical"
 $txtLog.Location = New-Object System.Drawing.Point(10,550)
 $txtLog.Size = New-Object System.Drawing.Size(720,130)
@@ -326,8 +325,13 @@ $script:cancelRequested = $false
 $script:folderData = @()
 $script:running = $false
 
-function Add-Log([string]$msg) {
-    $txtLog.AppendText("$(Get-Date -Format 'HH:mm:ss') $msg`r`n")
+function Add-Log([string]$msg, [bool]$isError = $false) {
+    $line = "$(Get-Date -Format 'HH:mm:ss') $msg`r`n"
+    $txtLog.SelectionStart = $txtLog.TextLength
+    $txtLog.SelectionLength = 0
+    $txtLog.SelectionColor = if ($isError) { [System.Drawing.Color]::Red } else { [System.Drawing.Color]::Black }
+    $txtLog.AppendText($line)
+    $txtLog.ScrollToCaret()
 }
 
 $btnBrowse.Add_Click({
@@ -480,7 +484,7 @@ $btnStart.Add_Click({
             foreach ($job in $inFlight) {
                 if ($job.Proc.HasExited) {
                     if (-not (Test-Path $job.OutFile) -or (Get-Item $job.OutFile).Length -eq 0) {
-                        Add-Log "  ERROR converting: $($job.File.Name)"
+                        Add-Log "  ERROR converting: $($job.File.Name)" $true
                         $errCount++
                     } elseif ($replaceMode -and ($job.OutFile -ne $job.File.FullName)) {
                         Remove-Item -LiteralPath $job.File.FullName -Force -ErrorAction SilentlyContinue
@@ -504,7 +508,15 @@ $btnStart.Add_Click({
     } else {
         $lblStatus.Text = "Done. $done/$total files processed, $errCount error(s)."
     }
-    Add-Log $lblStatus.Text
+    Add-Log $lblStatus.Text ($errCount -gt 0)
+    $progressOverall.Value = 0
+    if ($script:cancelRequested) {
+        [System.Windows.Forms.MessageBox]::Show("Stopped at $done/$total files.", "Stopped", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
+    } elseif ($errCount -gt 0) {
+        [System.Windows.Forms.MessageBox]::Show("Finished with $errCount error(s). $done/$total files processed - see the log for details.", "Finished with errors", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("All $total file(s) processed successfully.", "Finished", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information) | Out-Null
+    }
     $script:running = $false
     $btnStart.Enabled = $true
     $btnStop.Enabled = $false
