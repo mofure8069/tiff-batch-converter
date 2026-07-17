@@ -63,6 +63,20 @@ foreach ($sf in $scanFormatDefs) {
     $sfx += 65
 }
 
+$lblMinSize = New-Object System.Windows.Forms.Label
+$lblMinSize.Text = "Min size (MB):"
+$lblMinSize.Location = New-Object System.Drawing.Point(480,80)
+$lblMinSize.AutoSize = $true
+$form.Controls.Add($lblMinSize)
+
+$numMinSize = New-Object System.Windows.Forms.NumericUpDown
+$numMinSize.Minimum = 0
+$numMinSize.Maximum = 1000
+$numMinSize.Value = 3
+$numMinSize.Location = New-Object System.Drawing.Point(595,78)
+$numMinSize.Size = New-Object System.Drawing.Size(60,20)
+$form.Controls.Add($numMinSize)
+
 $clb = New-Object System.Windows.Forms.ListView
 $clb.Location = New-Object System.Drawing.Point(10,110)
 $clb.Size = New-Object System.Drawing.Size(720,170)
@@ -83,9 +97,15 @@ $btnDelete.Location = New-Object System.Drawing.Point(10,285)
 $btnDelete.Size = New-Object System.Drawing.Size(120,24)
 $form.Controls.Add($btnDelete)
 
+$btnClearList = New-Object System.Windows.Forms.Button
+$btnClearList.Text = "Clear List"
+$btnClearList.Location = New-Object System.Drawing.Point(140,285)
+$btnClearList.Size = New-Object System.Drawing.Size(100,24)
+$form.Controls.Add($btnClearList)
+
 $lblDeleteHint = New-Object System.Windows.Forms.Label
 $lblDeleteHint.Text = "(click a row to toggle its selection, or Ctrl+A for all, then Delete Selected)"
-$lblDeleteHint.Location = New-Object System.Drawing.Point(140,289)
+$lblDeleteHint.Location = New-Object System.Drawing.Point(250,289)
 $lblDeleteHint.AutoSize = $true
 $form.Controls.Add($lblDeleteHint)
 
@@ -107,7 +127,19 @@ function Remove-SelectedFolderEntries {
     $btnStart.Enabled = ($clb.Items.Count -gt 0)
 }
 
+function Clear-FolderList {
+    if ($script:running) { return }
+    $count = $clb.Items.Count
+    if ($count -eq 0) { return }
+    $clb.Items.Clear()
+    $script:folderData = @()
+    $btnStart.Enabled = $false
+    $lblStatus.Text = "Cleared $count entr$(if ($count -eq 1) {'y'} else {'ies'}) from the list."
+    Add-Log $lblStatus.Text
+}
+
 $btnDelete.Add_Click({ Remove-SelectedFolderEntries })
+$btnClearList.Add_Click({ Clear-FolderList })
 
 $clb.Add_KeyDown({
     param($s, $e)
@@ -367,8 +399,7 @@ $btnScan.Add_Click({
         [System.Windows.Forms.MessageBox]::Show("Folder not found: $root") | Out-Null
         return
     }
-    $clb.Items.Clear()
-    $script:folderData = @()
+    Clear-FolderList
     $btnStart.Enabled = $false
     $lblStatus.Text = "Scanning..."
     [System.Windows.Forms.Application]::DoEvents()
@@ -386,10 +417,12 @@ $btnScan.Add_Click({
         return
     }
     $extRegex = '^\.(' + ($activePatterns -join '|') + ')$'
+    $minSizeBytes = [int64]($numMinSize.Value * 1MB)
 
     $files = Get-ChildItem -Path $root -Recurse -File -ErrorAction SilentlyContinue |
         Where-Object {
             $_.Extension -match $extRegex -and
+            $_.Length -ge $minSizeBytes -and
             $_.FullName -notmatch '\\_TIF_BACKUP\\' -and
             $_.FullName -notmatch '\\\w+_output\\' -and
             $_.FullName -notmatch '\\screenshots\\'
@@ -423,6 +456,7 @@ $btnStart.Add_Click({
     $btnScan.Enabled = $false
     $btnBrowse.Enabled = $false
     $btnDelete.Enabled = $false
+    $btnClearList.Enabled = $false
     $chkReplace.Enabled = $false
     $chkBackupReplace.Enabled = $false
 
@@ -555,11 +589,11 @@ $btnStart.Add_Click({
     Add-Log $lblStatus.Text ($errCount -gt 0)
     $progressOverall.Value = 0
     if ($script:cancelRequested) {
-        [System.Windows.Forms.MessageBox]::Show("Stopped at $done/$total files.$sizeSummary", "Stopped", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
+        [System.Windows.Forms.MessageBox]::Show("Stopped at $done/$total files.$sizeSummary", "Stopped", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::None) | Out-Null
     } elseif ($errCount -gt 0) {
-        [System.Windows.Forms.MessageBox]::Show("Finished with $errCount error(s). $done/$total files processed.$sizeSummary`nSee the log for details.", "Finished with errors", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
+        [System.Windows.Forms.MessageBox]::Show("Finished with $errCount error(s). $done/$total files processed.$sizeSummary`nSee the log for details.", "Finished with errors", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::None) | Out-Null
     } else {
-        [System.Windows.Forms.MessageBox]::Show("All $total file(s) processed successfully.$sizeSummary", "Finished", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information) | Out-Null
+        [System.Windows.Forms.MessageBox]::Show("All $total file(s) processed successfully.$sizeSummary", "Finished", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::None) | Out-Null
     }
     $script:running = $false
     $btnStart.Enabled = $true
@@ -567,6 +601,7 @@ $btnStart.Add_Click({
     $btnScan.Enabled = $true
     $btnBrowse.Enabled = $true
     $btnDelete.Enabled = $true
+    $btnClearList.Enabled = $true
     $chkReplace.Enabled = $true
     $chkBackupReplace.Enabled = $chkReplace.Checked
 })

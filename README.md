@@ -6,10 +6,10 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 
 ## Features
 
-- Scans a folder tree and lists every subfolder containing JPEG/PNG/GIF/BMP/TIFF/WebP files, with file counts and sizes
-- Or just drag individual files or folders straight into the list — no scan required
+- Scans a folder tree and lists every subfolder containing JPEG/PNG/GIF/BMP/TIFF/WebP files, with file counts and sizes. A **Min size (MB)** field (default 3) filters out small files during scanning — set it to 0 to disable
+- Or just drag individual files or folders straight into the list — no scan required, and the size filter doesn't apply to drops
 - Pick which folders to include/exclude before converting
-- Select rows (click, Ctrl+click, Shift+click, or Ctrl+A) and click **Delete Selected** to remove entries from the list
+- Select rows (click, Ctrl+click, Shift+click, or Ctrl+A) and click **Delete Selected** to remove entries from the list, or **Clear List** to empty it entirely
 - Output formats: JPEG (default), WebP, PNG, with an adjustable quality setting (JPEG/WebP only — PNG is lossless)
 - Optional metadata stripping (drops EXIF/color profile for smaller, slightly faster output)
 - Parallel conversion jobs — runs multiple `magick` processes at once. Scanning auto-detects the target drive and picks a sensible default: full CPU core count on an internal SSD/NVMe drive, a moderate count on external USB drives, or just 2 on a spinning HDD (more parallelism there just causes disk-seek thrashing, not speed) — always manually adjustable
