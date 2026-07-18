@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Image Batch Converter"
-$form.Size = New-Object System.Drawing.Size(760,761)
+$form.Size = New-Object System.Drawing.Size(760,784)
 $form.StartPosition = "CenterScreen"
 $form.MinimumSize = $form.Size
 
@@ -96,8 +96,14 @@ $chkAllFormats.Add_CheckedChanged({
     }
 })
 
+$lblMinSizeHint = New-Object System.Windows.Forms.Label
+$lblMinSizeHint.Text = "Min size only filters Scan results (files smaller than this are skipped, not included) - drag-and-drop is never filtered."
+$lblMinSizeHint.Location = New-Object System.Drawing.Point(10,124)
+$lblMinSizeHint.AutoSize = $true
+$form.Controls.Add($lblMinSizeHint)
+
 $clb = New-Object System.Windows.Forms.ListView
-$clb.Location = New-Object System.Drawing.Point(10,133)
+$clb.Location = New-Object System.Drawing.Point(10,156)
 $clb.Size = New-Object System.Drawing.Size(720,170)
 $clb.View = [System.Windows.Forms.View]::Details
 $clb.HeaderStyle = [System.Windows.Forms.ColumnHeaderStyle]::None
@@ -112,19 +118,19 @@ $form.AllowDrop = $true
 
 $btnDelete = New-Object System.Windows.Forms.Button
 $btnDelete.Text = "Delete Selected"
-$btnDelete.Location = New-Object System.Drawing.Point(10,308)
+$btnDelete.Location = New-Object System.Drawing.Point(10,331)
 $btnDelete.Size = New-Object System.Drawing.Size(120,24)
 $form.Controls.Add($btnDelete)
 
 $btnClearList = New-Object System.Windows.Forms.Button
 $btnClearList.Text = "Clear List"
-$btnClearList.Location = New-Object System.Drawing.Point(140,308)
+$btnClearList.Location = New-Object System.Drawing.Point(140,331)
 $btnClearList.Size = New-Object System.Drawing.Size(100,24)
 $form.Controls.Add($btnClearList)
 
 $lblDeleteHint = New-Object System.Windows.Forms.Label
 $lblDeleteHint.Text = "3) Review your list. Click a row to select it, or Ctrl+A for all."
-$lblDeleteHint.Location = New-Object System.Drawing.Point(250,312)
+$lblDeleteHint.Location = New-Object System.Drawing.Point(250,335)
 $lblDeleteHint.AutoSize = $true
 $form.Controls.Add($lblDeleteHint)
 
@@ -254,7 +260,7 @@ $form.Add_DragDrop($dragDropHandler)
 
 $lblFormat = New-Object System.Windows.Forms.Label
 $lblFormat.Text = "4) Output format:"
-$lblFormat.Location = New-Object System.Drawing.Point(10,343)
+$lblFormat.Location = New-Object System.Drawing.Point(10,366)
 $lblFormat.AutoSize = $true
 $form.Controls.Add($lblFormat)
 
@@ -262,13 +268,13 @@ $cmbFormat = New-Object System.Windows.Forms.ComboBox
 $cmbFormat.DropDownStyle = "DropDownList"
 $cmbFormat.Items.AddRange(@("JPEG","WebP","PNG"))
 $cmbFormat.SelectedIndex = 0
-$cmbFormat.Location = New-Object System.Drawing.Point(110,340)
+$cmbFormat.Location = New-Object System.Drawing.Point(110,363)
 $cmbFormat.Size = New-Object System.Drawing.Size(80,22)
 $form.Controls.Add($cmbFormat)
 
 $lblQuality = New-Object System.Windows.Forms.Label
 $lblQuality.Text = "Quality (1-100):"
-$lblQuality.Location = New-Object System.Drawing.Point(210,343)
+$lblQuality.Location = New-Object System.Drawing.Point(210,366)
 $lblQuality.AutoSize = $true
 $form.Controls.Add($lblQuality)
 
@@ -276,19 +282,19 @@ $numQuality = New-Object System.Windows.Forms.NumericUpDown
 $numQuality.Minimum = 1
 $numQuality.Maximum = 100
 $numQuality.Value = 90
-$numQuality.Location = New-Object System.Drawing.Point(330,341)
+$numQuality.Location = New-Object System.Drawing.Point(330,364)
 $numQuality.Size = New-Object System.Drawing.Size(60,20)
 $form.Controls.Add($numQuality)
 
 $lblOutDirName = New-Object System.Windows.Forms.Label
 $lblOutDirName.Text = "Output folder name:"
-$lblOutDirName.Location = New-Object System.Drawing.Point(410,343)
+$lblOutDirName.Location = New-Object System.Drawing.Point(410,366)
 $lblOutDirName.AutoSize = $true
 $form.Controls.Add($lblOutDirName)
 
 $txtOutDirName = New-Object System.Windows.Forms.TextBox
 $txtOutDirName.Text = "converted_output"
-$txtOutDirName.Location = New-Object System.Drawing.Point(535,340)
+$txtOutDirName.Location = New-Object System.Drawing.Point(535,363)
 $txtOutDirName.Size = New-Object System.Drawing.Size(180,20)
 $form.Controls.Add($txtOutDirName)
 
@@ -301,13 +307,13 @@ $cmbFormat.Add_SelectedIndexChanged({
 
 $lblOutputHint = New-Object System.Windows.Forms.Label
 $lblOutputHint.Text = "Saved to a new subfolder inside each source folder (named below) - or converted in place if Replace files is checked."
-$lblOutputHint.Location = New-Object System.Drawing.Point(10,366)
+$lblOutputHint.Location = New-Object System.Drawing.Point(10,389)
 $lblOutputHint.AutoSize = $true
 $form.Controls.Add($lblOutputHint)
 
 $lblParallel = New-Object System.Windows.Forms.Label
 $lblParallel.Text = "Parallel jobs:"
-$lblParallel.Location = New-Object System.Drawing.Point(10,400)
+$lblParallel.Location = New-Object System.Drawing.Point(10,423)
 $lblParallel.AutoSize = $true
 $form.Controls.Add($lblParallel)
 
@@ -315,27 +321,27 @@ $numParallel = New-Object System.Windows.Forms.NumericUpDown
 $numParallel.Minimum = 1
 $numParallel.Maximum = 32
 $numParallel.Value = [Math]::Max(1, [Environment]::ProcessorCount)
-$numParallel.Location = New-Object System.Drawing.Point(110,397)
+$numParallel.Location = New-Object System.Drawing.Point(110,420)
 $numParallel.Size = New-Object System.Drawing.Size(60,20)
 $form.Controls.Add($numParallel)
 
 $lblParallelHint = New-Object System.Windows.Forms.Label
 $lblParallelHint.Text = "(runs this many conversions at once - big speedup on multi-core CPUs)"
-$lblParallelHint.Location = New-Object System.Drawing.Point(180,400)
+$lblParallelHint.Location = New-Object System.Drawing.Point(180,423)
 $lblParallelHint.AutoSize = $true
 $form.Controls.Add($lblParallelHint)
 
 $chkStrip = New-Object System.Windows.Forms.CheckBox
 $chkStrip.Text = "Strip metadata (faster + smaller, drops EXIF/XMP/IPTC/color profile and other embedded metadata)"
 $chkStrip.Checked = $false
-$chkStrip.Location = New-Object System.Drawing.Point(10,423)
+$chkStrip.Location = New-Object System.Drawing.Point(10,446)
 $chkStrip.AutoSize = $true
 $form.Controls.Add($chkStrip)
 
 $chkReplace = New-Object System.Windows.Forms.CheckBox
 $chkReplace.Text = "Replace files in original folder (instead of a separate output folder)"
 $chkReplace.Checked = $false
-$chkReplace.Location = New-Object System.Drawing.Point(10,446)
+$chkReplace.Location = New-Object System.Drawing.Point(10,469)
 $chkReplace.AutoSize = $true
 $form.Controls.Add($chkReplace)
 
@@ -343,13 +349,13 @@ $chkBackupReplace = New-Object System.Windows.Forms.CheckBox
 $chkBackupReplace.Text = "Back up originals first"
 $chkBackupReplace.Checked = $true
 $chkBackupReplace.Enabled = $false
-$chkBackupReplace.Location = New-Object System.Drawing.Point(30,469)
+$chkBackupReplace.Location = New-Object System.Drawing.Point(30,492)
 $chkBackupReplace.AutoSize = $true
 $form.Controls.Add($chkBackupReplace)
 
 $lblReplaceWarn = New-Object System.Windows.Forms.Label
 $lblReplaceWarn.Text = "(no safe-resume in this mode - every checked file gets reprocessed each run)"
-$lblReplaceWarn.Location = New-Object System.Drawing.Point(190,472)
+$lblReplaceWarn.Location = New-Object System.Drawing.Point(190,495)
 $lblReplaceWarn.AutoSize = $true
 $form.Controls.Add($lblReplaceWarn)
 
@@ -360,32 +366,32 @@ $chkReplace.Add_CheckedChanged({
 
 $btnStart = New-Object System.Windows.Forms.Button
 $btnStart.Text = "Start"
-$btnStart.Location = New-Object System.Drawing.Point(10,501)
+$btnStart.Location = New-Object System.Drawing.Point(10,524)
 $btnStart.Size = New-Object System.Drawing.Size(120,32)
 $btnStart.Enabled = $false
 $form.Controls.Add($btnStart)
 
 $btnStop = New-Object System.Windows.Forms.Button
 $btnStop.Text = "Stop"
-$btnStop.Location = New-Object System.Drawing.Point(140,501)
+$btnStop.Location = New-Object System.Drawing.Point(140,524)
 $btnStop.Size = New-Object System.Drawing.Size(120,32)
 $btnStop.Enabled = $false
 $form.Controls.Add($btnStop)
 
 $progressOverall = New-Object System.Windows.Forms.ProgressBar
-$progressOverall.Location = New-Object System.Drawing.Point(10,541)
+$progressOverall.Location = New-Object System.Drawing.Point(10,564)
 $progressOverall.Size = New-Object System.Drawing.Size(720,25)
 $form.Controls.Add($progressOverall)
 
 $lblStatus = New-Object System.Windows.Forms.Label
-$lblStatus.Location = New-Object System.Drawing.Point(10,571)
+$lblStatus.Location = New-Object System.Drawing.Point(10,594)
 $lblStatus.Size = New-Object System.Drawing.Size(720,20)
 $lblStatus.Text = "Idle. Pick a root folder and click Scan."
 $form.Controls.Add($lblStatus)
 
 $txtLog = New-Object System.Windows.Forms.RichTextBox
 $txtLog.ScrollBars = "Vertical"
-$txtLog.Location = New-Object System.Drawing.Point(10,596)
+$txtLog.Location = New-Object System.Drawing.Point(10,619)
 $txtLog.Size = New-Object System.Drawing.Size(720,130)
 $txtLog.ReadOnly = $true
 $txtLog.Font = New-Object System.Drawing.Font("Consolas",9)
