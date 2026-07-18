@@ -607,7 +607,7 @@ $btnStart.Add_Click({
                 $argParts.Add("-limit"); $argParts.Add("thread"); $argParts.Add("1")
                 $argParts.Add("-limit"); $argParts.Add("memory"); $argParts.Add("1GiB")
                 $argParts.Add("-limit"); $argParts.Add("map"); $argParts.Add("2GiB")
-                $argParts.Add("`"$($f.FullName)`"")
+                $argParts.Add("`"$($f.FullName)[0]`"")
                 if ($stripMeta) { $argParts.Add("-strip") }
                 if ($format -ne "PNG") { $argParts.Add("-quality"); $argParts.Add("$quality") }
                 $argParts.Add("`"$outFile`"")

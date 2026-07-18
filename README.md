@@ -46,6 +46,7 @@ A simple Windows GUI for batch-converting images (JPEG, PNG, GIF, BMP, TIFF, Web
 - Requires ImageMagick to be installed separately; the app checks for it and shows install instructions, but doesn't install it for you
 - One quality setting applies to the whole batch — no per-file or per-folder overrides
 - Parallel job count is a flat number of concurrent `magick` processes; it doesn't account for per-file size, so very large images plus a high job count can use a lot of memory at once
+- Only the first frame/page of animated GIFs, animated WebP, or multi-page TIFF is converted — no animation support
 
 ## License
 
